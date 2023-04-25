@@ -5,6 +5,7 @@ const path = require("path");
 const app = express();
 const PORT = process.env.PORT || 3000;
 const server = require("http").createServer(app);
+const axios = require('axios');
 
 const io = require("socket.io")(server);
 
@@ -18,7 +19,19 @@ io.on("connection", function(socket){
         socket.broadcast.emit("update", username + " left the conversation");
     });
     socket.on("chat",function(message){
-        socket.broadcast.emit("chat", message);
+        const recipientMessage = message.content;
+        const apiUrl = 'https://xyr7no9012.execute-api.ap-northeast-1.amazonaws.com/chatapi/chat';
+        axios.post(apiUrl, { message: recipientMessage })
+            .then(response => {
+                const redactedMessage = response.data.response;
+                message.content = redactedMessage;
+                socket.broadcast.emit("chat", message);
+    })
+            .catch(error => {
+                // Handle any errors that may occur during the API request
+                console.error('Error:', error);
+            });
+        //socket.broadcast.emit("chat", message);
     });
 });
 server.listen(PORT);
