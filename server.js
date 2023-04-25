@@ -19,12 +19,12 @@ io.on("connection", function(socket){
         socket.broadcast.emit("update", username + " left the conversation");
     });
     socket.on("chat",function(message){
-        const recipientMessage = message.content;
+        const recipientMessage = {message: message.text};
         const apiUrl = 'https://xyr7no9012.execute-api.ap-northeast-1.amazonaws.com/chatapi/chat';
-        axios.post(apiUrl, { message: recipientMessage })
+        axios.post(apiUrl, recipientMessage )
             .then(response => {
                 const redactedMessage = response.data.response;
-                message.content = redactedMessage;
+                message.text = redactedMessage;
                 socket.broadcast.emit("chat", message);
     })
             .catch(error => {
